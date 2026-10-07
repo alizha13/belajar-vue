@@ -1,0 +1,29 @@
+:root {
+  --nav-bg: #1c1948;
+  --primary: #6644ff;
+  --text-white: #fff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    Roboto,
+    sans-serif;
+  background: #f6f6fb;
+  color: #1c1948;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
