@@ -53,6 +53,18 @@ const routes = [
       },
     ],
   },
+  {
+    // Organizer Dashboard memakai layout sendiri (Rail & Pane), terpisah dari layout publik
+    path: '/dashboard',
+    component: () => import('@/layouts/DashboardLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'dashboard',
+        component: () => import('@/views/Dashboard.vue'),
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
