@@ -1,62 +1,25 @@
 <script setup>
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useEvents } from '@/composables/useEvents'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppCard from '@/components/ui/AppCard.vue'
+const route = useRoute()
+const router = useRouter()
+const { getEventById } = useEvents()
+const registered = ref(false)
+const event = computed(() => getEventById(route.params.id))
 </script>
-
 <template>
   <div class="event-detail-page">
-    <button @click="$router.push('/browse/events')" class="btn-back">&larr; Back to Events</button>
-
-    <div class="detail-header">
-      <span class="event-tag">Workshop & Training</span>
-      <h1>Vue.js Mastery Workshop {{ $route.params.id }}</h1>
-      <div class="meta-info">
-        <span class="meta-item">📅 October 12, 2026</span>
-        <span class="meta-item">📍 Tech Hub, Jakarta Pusat</span>
-        <span class="meta-item">👥 Quota: 150 Attendees</span>
-      </div>
-    </div>
-
-    <div class="detail-content grid-asymmetric">
-      <div class="main-desc">
-        <h2>About This Event</h2>
-        <p>
-          Welcome to the biggest web interface development training event of the year! Gatherly is
-          collaborating with the local developer community to host a comprehensive workshop designed
-          specifically to bring together professionals, enthusiasts, and students.
-        </p>
-        <p>
-          In this session, we will discuss various current industry challenges, dissect the
-          implementation of Single Page Applications (SPA), and practice hands-on Layout System
-          design prioritizing visual hierarchy. You will gain practical insights that can be
-          directly applied to your future projects or career.
-        </p>
-
-        <h2>Event Agenda</h2>
-        <ul class="agenda-list">
-          <li><strong>09:00 AM</strong> - Registration & QR Check-in Scanning</li>
-          <li><strong>10:00 AM</strong> - Session 1: Vue Router & Navigation Fundamentals</li>
-          <li><strong>11:30 AM</strong> - Coffee Break & Networking Session</li>
-          <li><strong>01:00 PM</strong> - Session 2: Layout System & Grid Implementation</li>
-          <li><strong>03:00 PM</strong> - Q&A & Closing Remarks</li>
-        </ul>
-      </div>
-
-      <div class="sidebar">
-        <AppCard class="ticket-card sticky-pane">
-          <h3>Attendee Registration</h3>
-          <p class="price">Free</p>
-          <p class="ticket-desc">Secure your seat now before the quota is full.</p>
-
-          <AppButton variant="primary" class="btn-register"> Register Now </AppButton>
-
-          <p class="spots">Only 12 seats left!</p>
-        </AppCard>
-      </div>
-    </div>
+    <button @click="router.push('/browse/events')" class="btn-back">← Back to Events</button>
+    <template v-if="event">
+      <div class="detail-header"><span class="event-tag">{{ event.cat }}</span><h1>{{ event.title }}</h1><div class="meta-info"><span class="meta-item">📅 {{ event.date }}</span><span class="meta-item">{{ event.loc }}</span><span class="meta-item">👥 Quota: {{ event.quota || 100 }} Attendees</span></div></div>
+      <div class="detail-content grid-asymmetric"><div class="main-desc"><h2>About This Event</h2><p style="white-space:pre-line">{{ event.desc }}</p></div><div class="sidebar"><AppCard class="ticket-card sticky-pane"><h3>Attendee Registration</h3><p class="price">{{ event.done ? 'Registration Closed' : (event.price || 'Free') }}</p><p class="ticket-desc">{{ event.done ? 'Registration is closed as this event has ended.' : 'Secure your seat now before the quota is full.' }}</p><AppButton v-if="!event.done" variant="primary" @click="registered = true">Register Now</AppButton><button v-else class="registration-closed" disabled>Registration Closed</button><p v-if="registered" class="spots">Registration successfully received!</p><p v-else class="spots">{{ event.done ? 'This event has been completed.' : `${event.quota || 100} spots available` }}</p></AppCard></div></div>
+    </template>
+    <div v-else class="not-found-card"><h2>404 - Event Not Found</h2><p>The event you are looking for is unavailable or has been removed by the organizer.</p><AppButton @click="router.push('/browse/events')">Back to Event Catalog</AppButton></div>
   </div>
 </template>
-
 <style scoped>
 .btn-back {
   background: none;
@@ -169,3 +132,5 @@ import AppCard from '@/components/ui/AppCard.vue'
   }
 }
 </style>
+
+<style scoped>.meta-info{flex-wrap:wrap}.registration-closed{background:#d1d5db;color:#555;border:0;padding:12px 18px;border-radius:10px;cursor:not-allowed}.not-found-card{text-align:center;background:#fff;padding:55px 20px;border:1px solid var(--border-color);border-radius:12px}.not-found-card p{color:var(--text-muted);margin-bottom:25px}@media(max-width:750px){.grid-asymmetric{grid-template-columns:1fr}.detail-header h1{font-size:2rem}}</style>

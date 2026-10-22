@@ -1,80 +1,21 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useEvents } from '@/composables/useEvents'
 import EventCard from '@/components/event/EventCard.vue'
 import SearchBar from '@/components/event/SearchBar.vue'
 import CategoryFilter from '@/components/event/CategoryFilter.vue'
-
 const router = useRouter()
-
-const events = [
-  {
-    id: 1,
-    title: 'Vue.js Mastery Workshop',
-    date: 'Oct 12, 2026',
-    loc: '📍 Tech Hub, Jakarta',
-    cat: 'Workshop',
-    desc: 'Learn advanced Vue 3 concepts, Composition API, and state management to build high-performance web applications interactively.',
-  },
-  {
-    id: 2,
-    title: 'National Tech Meetup',
-    date: 'Oct 15, 2026',
-    loc: '📍 Main Auditorium, City Center',
-    cat: 'Meetup',
-    desc: 'A gathering of hundreds of developers and tech enthusiasts to share the latest industry trends and expand professional networks.',
-  },
-  {
-    id: 3,
-    title: 'Startup Pitch Competition',
-    date: 'Nov 02, 2026',
-    loc: '📍 Innovation Center',
-    cat: 'Competition',
-    desc: 'Watch the best local startup founders pitch their innovative ideas live in front of a panel of renowned investors.',
-  },
-  {
-    id: 4,
-    title: 'UI/UX Design Sprint',
-    date: 'Nov 10, 2026',
-    loc: '📍 Creative Studio',
-    cat: 'Workshop',
-    desc: 'A hands-on session on designing user interfaces by implementing layout systems and visual hierarchy principles.',
-  },
-  {
-    id: 5,
-    title: 'Digital Marketing Seminar',
-    date: 'Nov 20, 2026',
-    loc: '📍 Grand Hotel Hall',
-    cat: 'Seminar',
-    desc: 'An in-depth seminar dissecting modern digital marketing strategies, from SEO optimization to user conversion tactics.',
-  },
-  {
-    id: 6,
-    title: 'Community Leaders Summit',
-    date: 'Dec 05, 2026',
-    loc: '📍 Gatherly HQ',
-    cat: 'Conference',
-    desc: 'An exclusive year-end conference for community leaders to formulate sustainable ecosystem development strategies.',
-  },
-]
-
+const { activeEvents } = useEvents()
 const searchQuery = ref('')
 const selectedCategory = ref('All')
-const categories = ['All', 'Workshop', 'Meetup', 'Competition', 'Seminar', 'Conference']
-
-const filteredEvents = computed(() => {
-  return events.filter((event) => {
-    const matchSearch =
-      event.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      event.loc.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchCat = selectedCategory.value === 'All' || event.cat === selectedCategory.value
-    return matchSearch && matchCat
-  })
-})
-
-const handleViewDetail = (id) => {
-  router.push(`/browse/events/${id}`)
-}
+const categories = ['All','Workshop','Meetup','Competition','Seminar','Conference']
+const filteredEvents = computed(() => activeEvents.value.filter(e => {
+  const q = searchQuery.value.toLowerCase()
+  const matchesSearch = e.title.toLowerCase().includes(q) || e.loc.toLowerCase().includes(q)
+  return matchesSearch && (selectedCategory.value === 'All' || e.cat === selectedCategory.value)
+}))
+const handleViewDetail = id => router.push(`/browse/events/${id}`)
 </script>
 
 <template>
@@ -91,7 +32,7 @@ const handleViewDetail = (id) => {
       <CategoryFilter :categories="categories" v-model="selectedCategory" />
     </div>
 
-    <div class="event-grid">
+    <div v-if="filteredEvents.length > 0" class="event-grid">
       <EventCard
         v-for="event in filteredEvents"
         :key="event.id"
@@ -100,8 +41,11 @@ const handleViewDetail = (id) => {
       />
     </div>
 
-    <div v-if="filteredEvents.length === 0" class="empty-state">
-      <p>No events found matching your criteria.</p>
+    <div v-else class="empty-state friendly-empty">
+      <div class="empty-icon">🏬</div>
+      <h3>No Events Available Yet</h3>
+      <p>There are currently no active events scheduled. Are you an organizer? Publish and manage your first event today through the Dashboard!</p>
+      <button class="empty-action" @click="router.push('/dashboard/events')">Go to Organizer Dashboard →</button>
     </div>
   </div>
 </template>
@@ -136,4 +80,8 @@ const handleViewDetail = (id) => {
   background: var(--bg-light);
   border-radius: var(--space-4);
 }
+</style>
+
+<style scoped>
+.friendly-empty{text-align:center;border:1px solid var(--border-color);border-radius:12px;padding:40px 20px;background:#fff;max-width:650px;margin:20px auto}.friendly-empty .empty-icon{font-size:2.5rem}.friendly-empty h3{margin:12px 0}.friendly-empty p{max-width:470px;margin:0 auto 20px;color:var(--text-muted);line-height:1.6}.empty-action{background:var(--primary);color:white;border:0;border-radius:8px;padding:12px 20px;font-weight:700;cursor:pointer}
 </style>
