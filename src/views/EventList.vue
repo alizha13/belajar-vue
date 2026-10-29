@@ -6,7 +6,7 @@ import EventCard from '@/components/event/EventCard.vue'
 import SearchBar from '@/components/event/SearchBar.vue'
 import CategoryFilter from '@/components/event/CategoryFilter.vue'
 const router = useRouter()
-const { activeEvents } = useEvents()
+const { activeEvents, isUserRegistered } = useEvents()
 const searchQuery = ref('')
 const selectedCategory = ref('All')
 const categories = ['All','Workshop','Meetup','Competition','Seminar','Conference']
@@ -37,6 +37,7 @@ const handleViewDetail = id => router.push(`/browse/events/${id}`)
         v-for="event in filteredEvents"
         :key="event.id"
         :event="event"
+        :is-registered="isUserRegistered(event.id)"
         @view-detail="handleViewDetail"
       />
     </div>

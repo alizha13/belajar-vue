@@ -2,7 +2,7 @@
   <AppCard class="event-card-wrapper">
     <div class="event-body">
       <div class="event-meta">
-        <span class="event-date">{{ event.date }}</span>
+        <div class="meta-left"><span class="event-date">{{ event.date }}</span><span v-if="isRegistered" class="badge-registered">Registered</span></div>
         <span class="event-category">{{ event.cat }}</span>
       </div>
 
@@ -23,6 +23,7 @@
 import AppCard from '@/components/ui/AppCard.vue'
 
 defineProps({
+  isRegistered: { type: Boolean, default: false },
   event: {
     type: Object,
     required: true,
@@ -98,3 +99,5 @@ defineEmits(['view-detail'])
   color: var(--primary);
 }
 </style>
+
+<style scoped>.meta-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.badge-registered{background:#dbeafe;color:#1d4ed8;padding:5px 8px;border-radius:6px;font-size:.76rem;font-weight:700}</style>
