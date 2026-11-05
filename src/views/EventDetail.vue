@@ -1,19 +1,23 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEvents } from '@/composables/useEvents'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppCard from '@/components/ui/AppCard.vue'
 const route = useRoute()
 const router = useRouter()
-const { getEventById, isUserRegistered } = useEvents()
+const { getEventById, isUserRegistered, fetchEventById, loading, error } = useEvents()
+onMounted(() => fetchEventById(route.params.id))
+watch(() => route.params.id, id => fetchEventById(id))
 const registered = computed(() => isUserRegistered(route.params.id))
 const event = computed(() => getEventById(route.params.id))
 </script>
 <template>
   <div class="event-detail-page">
     <button @click="router.push('/browse/events')" class="btn-back">← Back to Events</button>
-    <template v-if="event">
+    <div v-if="loading" class="api-loading">Loading event details...</div>
+    <div v-else-if="error" class="api-error" role="alert"><h2>Unable to Load Event</h2><p>{{ error }}</p><AppButton @click="fetchEventById(route.params.id)">Try Again</AppButton></div>
+    <template v-else-if="event">
       <div class="detail-header"><span class="event-tag">{{ event.cat }}</span><h1>{{ event.title }}</h1><div class="meta-info"><span class="meta-item">Date: {{ event.date }}</span><span class="meta-item">{{ event.loc }}</span><span class="meta-item">Remaining Quota: {{ event.quota }} Attendees</span></div></div>
       <div class="detail-content grid-asymmetric"><div class="main-desc"><h2>About This Event</h2><p style="white-space:pre-line">{{ event.desc }}</p></div><div class="sidebar"><AppCard class="ticket-card sticky-pane"><h3>Event Registration</h3><p v-if="registered" class="registered-message">You are registered for this event. Your booking is confirmed.</p><p v-if="!registered" class="ticket-desc">{{ event.done ? 'Registration is closed as this event has ended.' : 'Secure your spot now before the remaining quota is filled.' }}</p><button v-if="event.done" class="registration-closed" disabled>Registration Closed</button><template v-else-if="registered"><button class="registration-closed" disabled>Already Registered</button><button class="receipt-link" @click="router.push(`/browse/your-events/${event.id}`)">View Your Ticket Receipt →</button></template><button v-else-if="Number(event.quota) <= 0" class="registration-closed" disabled>Sold Out</button><AppButton v-else variant="primary" @click="router.push(`/browse/events/${event.id}/register`)">Register Now</AppButton><p v-if="!registered" class="spots">{{ event.done ? 'This event has been completed.' : registered ? 'Your registration is confirmed.' : Number(event.quota) <= 0 ? 'All seats are taken.' : `${event.quota} seats available` }}</p></AppCard></div></div>
     </template>
