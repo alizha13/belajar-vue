@@ -1,11 +1,14 @@
 <template>
-  <button :class="['app-button', `btn-${variant}`]" @click="$emit('click')">
+  <button :class="['app-button', `btn-${variant}`]" :disabled="loading || disabled" :aria-busy="loading" @click="$emit('click')">
+    <span v-if="loading" class="button-spinner" aria-hidden="true"></span>
     <slot />
   </button>
 </template>
 
 <script setup>
 defineProps({
+  loading: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
   variant: {
     type: String,
     default: 'primary',
@@ -30,7 +33,10 @@ defineEmits(['click'])
     background-color 0.2s;
 }
 
-.app-button:hover {
+.app-button:disabled { opacity: .65; cursor: not-allowed; }
+.button-spinner { display: inline-block; width: 14px; height: 14px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.app-button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 

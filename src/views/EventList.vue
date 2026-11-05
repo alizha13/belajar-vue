@@ -1,12 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useEvents } from '@/composables/useEvents'
 import EventCard from '@/components/event/EventCard.vue'
 import SearchBar from '@/components/event/SearchBar.vue'
 import CategoryFilter from '@/components/event/CategoryFilter.vue'
 const router = useRouter()
-const { activeEvents, isUserRegistered } = useEvents()
+const { activeEvents, isUserRegistered, fetchEvents, loading, error } = useEvents()
+onMounted(fetchEvents)
 const searchQuery = ref('')
 const selectedCategory = ref('All')
 const categories = ['All','Workshop','Meetup','Competition','Seminar','Conference']
@@ -32,7 +33,11 @@ const handleViewDetail = id => router.push(`/browse/events/${id}`)
       <CategoryFilter :categories="categories" v-model="selectedCategory" />
     </div>
 
-    <div v-if="filteredEvents.length > 0" class="event-grid">
+    <div v-if="loading" class="event-grid" aria-live="polite">
+      <div v-for="n in 6" :key="n" class="event-skeleton"><div class="skeleton skeleton-image"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div>
+    </div>
+    <div v-else-if="error" class="api-error" role="alert"><h3>Unable to Load Events</h3><p>{{ error }}</p><button class="empty-action" @click="fetchEvents">Try Again</button></div>
+    <div v-else-if="filteredEvents.length > 0" class="event-grid">
       <EventCard
         v-for="event in filteredEvents"
         :key="event.id"
